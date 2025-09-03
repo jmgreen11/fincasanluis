@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finca Serena Project Management Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .tab:hover {
+            background: rgba(45, 90, 39, 0.1);
+            color: #2d5a27;
+        }
+        
+        .tab.active {
+            color: #2d5a27;
+            background: white;
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #2d5a27;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card h3 {
+            color: #2d5a27;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .card .label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a7c59, #2d5a27);
+            transition: width 0.3s ease;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2d5a27;
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .status.not-started {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+        
+        .status.in-progress {
+            background: #a8e6cf;
+            color: #00b894;
+        }
+        
+        .status.completed {
+            background: #74b9ff;
+            color: #0984e3;
+        }
+        
+        .priority {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .priority.high {
+            background: #ffcccb;
+            color: #d32f2f;
+        }
+        
+        .priority.medium {
+            background: #fff4e6;
+            color: #f57c00;
+        }
+        
+        .priority.low {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+        
+        .edit-btn {
+            background: #2d5a27;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.3s ease;
+            margin-right: 5px;
+        }
+        
+        .edit-btn:hover {
+            background: #1a3318;
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background: #c82333;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal h3 {
+            color: #2d5a27;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #2d5a27;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #2d5a27;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1a3318;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #2d5a27, #4a7c59);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin: 20px 0;
+            padding-left: 80px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 39px;
+            top: 10px;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #2d5a27;
+            border: 4px solid white;
+            box-shadow: 0 0 0 3px #2d5a27;
+        }
+        
+        .timeline-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #2d5a27;
+        }
+        
+        .export-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #2d5a27;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(45, 90, 39, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(45, 90, 39, 0.4);
+        }
+        
+        .add-project-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: background 0.3s ease;
+        }
+        
+        .add-project-btn:hover {
+            background: #218838;
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                flex: none;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌿 Finca Serena</h1>
+            <p>Sustainable Farm Development Project Dashboard</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('overview')">📊 Overview</button>
+            <button class="tab" onclick="showTab('projects')">🚀 Projects</button>
+            <button class="tab" onclick="showTab('budget')">💰 Budget</button>
+            <button class="tab" onclick="showTab('timeline')">📅 Timeline</button>
+            <button class="tab" onclick="showTab('tasks')">✅ Tasks</button>
+        </div>
+        
+        <div id="overview" class="tab-content active">
+            <div class="summary-cards">
+                <div class="card">
+                    <h3>Total Budget</h3>
+                    <div class="value">$100,000</div>
+                    <div class="label">USD Allocated</div>
+                </div>
+                <div class="card">
+                    <h3>Project Progress</h3>
+                    <div class="value" id="overall-progress">0%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="overall-progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="label">Overall Completion</div>
+                </div>
+                <div class="card">
+                    <h3>Active Projects</h3>
+                    <div class="value" id="active-projects">7</div>
+                    <div class="label">Currently Running</div>
+                </div>
+                <div class="card">
+                    <h3>Budget Spent</h3>
+                    <div class="value" id="budget-spent">$0</div>
+                    <div class="label">of $100,000</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="projects" class="tab-content">
+            <button class="add-project-btn" onclick="addNewProject()">+ Add New Project</button>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Budget</th>
+                            <th>Year</th>
+                            <th>Progress</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projects-table">
+                        <!-- Projects will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="budget" class="tab-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Project Area</th>
+                            <th>Budgeted Amount</th>
+                            <th>Spent</th>
+                            <th>Remaining</th>
+                            <th>% of Total Budget</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="budget-table">
+                        <!-- Budget items will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="timeline" class="tab-content">
+            <div class="timeline" id="timeline-container">
+                <!-- Timeline items will be populated here -->
+            </div>
+        </div>
+        
+        <div id="tasks" class="tab-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Project</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Due Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasks-table">
+                        <!-- Tasks will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Edit Item</h3>
+            <form id="edit-form">
+                <div id="form-fields">
+                    <!-- Form fields will be populated dynamically -->
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <button class="export-btn" onclick="exportData()">📥 Export Data</button>
+    
+    <script>
+        // Data structure
+        let projectData = {
+            projects: [
+                {
+                    id: 1,
+                    name: "Native Plant & Tree Nursery",
+                    status: "in-progress",
+                    priority: "high",
+                    budget: 14000,
+                    spent: 2000,
+                    year: 1,
+                    progress: 15,
+                    description: "Build greenhouse and propagate native plants",
+                    tasks: [
+                        "Build greenhouse structure",
+                        "Set up propagation systems",
+                        "Design educational space",
+                        "Develop signage and demonstrations"
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "Crop Cultivation for Income",
+                    status: "not-started",
+                    priority: "high",
+                    budget: 14000,
+                    spent: 0,
+                    year: 1,
+                    progress: 0,
+                    description: "Establish sustainable crop production",
+                    tasks: [
+                        "Test soil and climate conditions",
+                        "Plant cacao and medicinal plants",
+                        "Build processing infrastructure",
+                        "Develop value-added products"
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "Water Conservation Systems",
+                    status: "in-progress",
+                    priority: "high",
+                    budget: 12000,
+                    spent: 3500,
+                    year: 1,
+                    progress: 30,
+                    description: "Implement comprehensive water management",
+                    tasks: [
+                        "Install rainwater catchment",
+                        "Set up greywater treatment",
+                        "Build ram pump system",
+                        "Create irrigation systems"
+                    ]
+                },
+                {
+                    id: 4,
+                    name: "Reforestation",
+                    status: "not-started",
+                    priority: "medium",
+                    budget: 13000,
+                    spent: 0,
+                    year: 1,
+                    progress: 0,
+                    description: "Restore biodiversity and create food forest",
+                    tasks: [
+                        "Identify reforestation areas",
+                        "Select native tree species",
+                        "Plan tree placement",
+                        "Establish food forest zones"
+                    ]
+                },
+                {
+                    id: 5,
+                    name: "Trail System & Features",
+                    status: "not-started",
+                    priority: "medium",
+                    budget: 12000,
+                    spent: 0,
+                    year: 1,
+                    progress: 0,
+                    description: "Create trail network with special features",
+                    tasks: [
+                        "Map trail routes",
+                        "Build trails and supports",
+                        "Install benches and rest areas",
+                        "Add treehouses and tree nets"
+                    ]
+                },
+                {
+                    id: 6,
+                    name: "Common Areas",
+                    status: "not-started",
+                    priority: "medium",
+                    budget: 20000,
+                    spent: 0,
+                    year: 2,
+                    progress: 0,
+                    description: "Build sustainable gathering spaces",
+                    tasks: [
+                        "Design common areas",
+                        "Build with sustainable materials",
+                        "Install composting toilets",
+                        "Create adaptable spaces"
+                    ]
+                },
+                {
+                    id: 7,
+                    name: "Organic Food Gardens",
+                    status: "not-started",
+                    priority: "low",
+                    budget: 10000,
+                    spent: 0,
+                    year: 2,
+                    progress: 0,
+                    description: "Establish farm-to-table gardens",
+                    tasks: [
+                        "Design garden layout",
+                        "Plant vegetables and herbs",
+                        "Build compost systems",
+                        "Integrate with meal offerings"
+                    ]
+                }
+            ]
+        };
+        
+        // Initialize the dashboard
+        function initDashboard() {
+            populateProjectsTable();
+            populateBudgetTable();
+            populateTimelineView();
+            populateTasksTable();
+            updateOverviewCards();
+            saveToLocalStorage();
+        }
+        
+        // Show/hide tabs
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Populate projects table
+        function populateProjectsTable() {
+            const tbody = document.getElementById('projects-table');
+            tbody.innerHTML = '';
+            
+            projectData.projects.forEach(project => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${project.name}</strong><br><small>${project.description}</small></td>
+                    <td><span class="status ${project.status}" onclick="toggleStatus(${project.id})">${project.status.replace('-', ' ')}</span></td>
+                    <td><span class="priority ${project.priority}">${project.priority}</span></td>
+                    <td>$${project.budget.toLocaleString()}</td>
+                    <td>Year ${project.year}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${project.progress}%"></div>
+                        </div>
+                        ${project.progress}%
+                    </td>
+                    <td>
+                        <button class="edit-btn" onclick="editProject(${project.id})">Edit</button>
+                        <button class="delete-btn" onclick="deleteProject(${project.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Populate budget table
+        function populateBudgetTable() {
+            const tbody = document.getElementById('budget-table');
+            tbody.innerHTML = '';
+            
+            projectData.projects.forEach(project => {
+                const remaining = project.budget - project.spent;
+                const percentage = ((project.budget / 100000) * 100).toFixed(1);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${project.name}</td>
+                    <td>$${project.budget.toLocaleString()}</td>
+                    <td>$${project.spent.toLocaleString()}</td>
+                    <td>$${remaining.toLocaleString()}</td>
+                    <td>${percentage}%</td>
+                    <td><span class="status ${project.status}">${project.status.replace('-', ' ')}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Populate timeline view
+        function populateTimelineView() {
+            const container = document.getElementById('timeline-container');
+            container.innerHTML = '';
+            
+            const years = [1, 2, 3];
+            years.forEach(year => {
+                const yearProjects = projectData.projects.filter(p => p.year === year);
+                
+                if (yearProjects.length > 0) {
+                    const timelineItem = document.createElement('div');
+                    timelineItem.className = 'timeline-item';
+                    
+                    const content = document.createElement('div');
+                    content.className = 'timeline-content';
+                    content.innerHTML = `
+                        <h3>Year ${year} - Establishing ${year === 1 ? 'Roots' : year === 2 ? 'Infrastructure & Engagement' : 'Growth & Community'}</h3>
+                        <ul>
+                            ${yearProjects.map(p => `<li><strong>${p.name}</strong> - $${p.budget.toLocaleString()} <span class="status ${p.status}">${p.status.replace('-', ' ')}</span></li>`).join('')}
+                        </ul>
+                    `;
+                    
+                    timelineItem.appendChild(content);
+                    container.appendChild(timelineItem);
+                }
+            });
+        }
+        
+        // Populate tasks table
+        function populateTasksTable() {
+            const tbody = document.getElementById('tasks-table');
+            tbody.innerHTML = '';
+            
+            projectData.projects.forEach(project => {
+                project.tasks.forEach((task, index) => {
+                    const row = document.createElement('tr');
+                    const dueDate = new Date();
+                    dueDate.setMonth(dueDate.getMonth() + project.year * 12 + index);
+                    
+                    row.innerHTML = `
+                        <td>${task}</td>
+                        <td>${project.name}</td>
+                        <td><span class="status not-started">not started</span></td>
+                        <td><span class="priority ${project.priority}">${project.priority}</span></td>
+                        <td>${dueDate.toDateString()}</td>
+                        <td><button class="edit-btn" onclick="editTask('${task}', ${project.id})">Edit</button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        }
+        
+        // Update overview cards
+        function updateOverviewCards() {
+            const totalSpent = projectData.projects.reduce((sum, p) => sum + p.spent, 0);
+            const avgProgress = projectData.projects.reduce((sum, p) => sum + p.progress, 0) / projectData.projects.length;
+            const activeProjects = projectData.projects.filter(p => p.status === 'in-progress').length;
+            
+            document.getElementById('overall-progress').textContent = Math.round(avgProgress) + '%';
+            document.getElementById('overall-progress-bar').style.width = avgProgress + '%';
+            document.getElementById('active-projects').textContent = activeProjects;
+            document.getElementById('budget-spent').textContent = '$' + totalSpent.toLocaleString();
+        }
+        
+        // Toggle project status
+        function toggleStatus(projectId) {
+            const project = projectData.projects.find(p => p.id === projectId);
+            if (project) {
+                const statuses = ['not-started', 'in-progress', 'completed'];
+                const currentIndex = statuses.indexOf(project.status);
+                project.status = statuses[(currentIndex + 1) % statuses.length];
+                
+                if (project.status === 'in-progress' && project.progress === 0) {
+                    project.progress = 25;
+                } else if (project.status === 'completed') {
+                    project.progress = 100;
+                }
+                
+                initDashboard();
+            }
+        }
+        
+        // Edit project
+        function editProject(projectId) {
+            const project = projectData.projects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            document.getElementById('modal-title').textContent = 'Edit Project';
+            document.getElementById('form-fields').innerHTML = `
+                <div class="form-group">
+                    <label>Project Name</label>
+                    <input type="text" id="edit-name" value="${project.name}">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="edit-description" rows="3">${project.description}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Budget ($)</label>
+                    <input type="number" id="edit-budget" value="${project.budget}">
+                </div>
+                <div class="form-group">
+                    <label>Spent ($)</label>
+                    <input type="number" id="edit-spent" value="${project.spent}">
+                </div>
+                <div class="form-group">
+                    <label>Progress (%)</label>
+                    <input type="range" id="edit-progress" min="0" max="100" value="${project.progress}" oninput="document.getElementById('progress-value').textContent = this.value + '%'">
+                    <span id="progress-value">${project.progress}%</span>
+                </div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="edit-priority">
+                        <option value="low" ${project.priority === 'low' ? 'selected' : ''}>Low</option>
+                        <option value="medium" ${project.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                        <option value="high" ${project.priority === 'high' ? 'selected' : ''}>High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Year</label>
+                    <select id="edit-year">
+                        <option value="1" ${project.year === 1 ? 'selected' : ''}>Year 1</option>
+                        <option value="2" ${project.year === 2 ? 'selected' : ''}>Year 2</option>
+                        <option value="3" ${project.year === 3 ? 'selected' : ''}>Year 3</option>
+                    </select>
+                </div>
+            `;
+            
+            document.getElementById('edit-modal').style.display = 'block';
+            
+            document.getElementById('edit-form').onsubmit = function(e) {
+                e.preventDefault();
+                
+                project.name = document.getElementById('edit-name').value;
+                project.description = document.getElementById('edit-description').value;
+                project.budget = parseInt(document.getElementById('edit-budget').value);
+                project.spent = parseInt(document.getElementById('edit-spent').value);
+                project.progress = parseInt(document.getElementById('edit-progress').value);
+                project.priority = document.getElementById('edit-priority').value;
+                project.year = parseInt(document.getElementById('edit-year').value);
+                
+                closeModal();
+                initDashboard();
+            };
+        }
+        
+        // Add new project
+        function addNewProject() {
+            const newProject = {
+                id: Math.max(...projectData.projects.map(p => p.id)) + 1,
+                name: "New Project",
+                status: "not-started",
+                priority: "medium",
+                budget: 5000,
+                spent: 0,
+                year: 1,
+                progress: 0,
+                description: "New project description",
+                tasks: ["Define project scope", "Create implementation plan", "Execute project", "Review and evaluate"]
+            };
+            
+            projectData.projects.push(newProject);
+            initDashboard();
+            editProject(newProject.id);
+        }
+        
+        // Delete project
+        function deleteProject(projectId) {
+            if (confirm('Are you sure you want to delete this project?')) {
+                projectData.projects = projectData.projects.filter(p => p.id !== projectId);
+                initDashboard();
+            }
+        }
+        
+        // Edit task
+        function editTask(taskName, projectId) {
+            const newTaskName = prompt('Edit task:', taskName);
+            if (newTaskName && newTaskName !== taskName) {
+                const project = projectData.projects.find(p => p.id === projectId);
+                if (project) {
+                    const taskIndex = project.tasks.indexOf(taskName);
+                    if (taskIndex !== -1) {
+                        project.tasks[taskIndex] = newTaskName;
+                        populateTasksTable();
+                        saveToLocalStorage();
+                    }
+                }
+            }
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+        
+        // Export data
+        function exportData() {
+            const dataToExport = {
+                ...projectData,
+                exportDate: new Date().toISOString(),
+                totalBudget: 100000,
+                summary: {
+                    totalProjects: projectData.projects.length,
+                    totalBudget: projectData.projects.reduce((sum, p) => sum + p.budget, 0),
+                    totalSpent: projectData.projects.reduce((sum, p) => sum + p.spent, 0),
+                    avgProgress: projectData.projects.reduce((sum, p) => sum + p.progress, 0) / projectData.projects.length
+                }
+            };
+            
+            // Create CSV content
+            let csvContent = "Project Name,Status,Priority,Budget,Spent,Remaining,Progress,Year,Description\n";
+            projectData.projects.forEach(project => {
+                const remaining = project.budget - project.spent;
+                csvContent += `"${project.name}","${project.status}","${project.priority}",${project.budget},${project.spent},${remaining},${project.progress},${project.year},"${project.description}"\n`;
+            });
+            
+            // Download CSV
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `finca-serena-projects-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            // Also download JSON for full data backup
+            const jsonBlob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+            const jsonUrl = window.URL.createObjectURL(jsonBlob);
+            const jsonA = document.createElement('a');
+            jsonA.href = jsonUrl;
+            jsonA.download = `finca-serena-data-${new Date().toISOString().split('T')[0]}.json`;
+            jsonA.click();
+            window.URL.revokeObjectURL(jsonUrl);
+        }
+        
+        // Save to localStorage
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('fincaSerenaData', JSON.stringify(projectData));
+            } catch (e) {
+                console.log('localStorage not available');
+            }
+        }
+        
+        // Load from localStorage
+        function loadFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem('fincaSerenaData');
+                if (saved) {
+                    projectData = JSON.parse(saved);
+                    return true;
+                }
+            } catch (e) {
+                console.log('localStorage not available');
+            }
+            return false;
+        }
+        
+        // Search functionality
+        function searchProjects(query) {
+            const filteredProjects = projectData.projects.filter(project => 
+                project.name.toLowerCase().includes(query.toLowerCase()) ||
+                project.description.toLowerCase().includes(query.toLowerCase()) ||
+                project.tasks.some(task => task.toLowerCase().includes(query.toLowerCase()))
+            );
+            
+            const tbody = document.getElementById('projects-table');
+            tbody.innerHTML = '';
+            
+            filteredProjects.forEach(project => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${project.name}</strong><br><small>${project.description}</small></td>
+                    <td><span class="status ${project.status}" onclick="toggleStatus(${project.id})">${project.status.replace('-', ' ')}</span></td>
+                    <td><span class="priority ${project.priority}">${project.priority}</span></td>
+                    <td>${project.budget.toLocaleString()}</td>
+                    <td>Year ${project.year}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${project.progress}%"></div>
+                        </div>
+                        ${project.progress}%
+                    </td>
+                    <td>
+                        <button class="edit-btn" onclick="editProject(${project.id})">Edit</button>
+                        <button class="delete-btn" onclick="deleteProject(${project.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 's':
+                        e.preventDefault();
+                        exportData();
+                        break;
+                    case 'n':
+                        e.preventDefault();
+                        addNewProject();
+                        break;
+                    case 'f':
+                        e.preventDefault();
+                        const searchInput = document.createElement('input');
+                        searchInput.type = 'text';
+                        searchInput.placeholder = 'Search projects...';
+                        searchInput.style.position = 'fixed';
+                        searchInput.style.top = '20px';
+                        searchInput.style.right = '20px';
+                        searchInput.style.zIndex = '1001';
+                        searchInput.style.padding = '10px';
+                        searchInput.style.borderRadius = '8px';
+                        searchInput.style.border = '2px solid #2d5a27';
+                        document.body.appendChild(searchInput);
+                        searchInput.focus();
+                        
+                        searchInput.addEventListener('input', (e) => {
+                            searchProjects(e.target.value);
+                        });
+                        
+                        searchInput.addEventListener('blur', () => {
+                            document.body.removeChild(searchInput);
+                            initDashboard();
+                        });
+                        break;
+                }
+            }
+        });
+        
+        // Click outside modal to close
+        document.getElementById('edit-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // Initialize dashboard when page loads
+        window.addEventListener('load', function() {
+            if (!loadFromLocalStorage()) {
+                initDashboard();
+            } else {
+                initDashboard();
+            }
+        });
+        
+    </script>
+</body>
+</html>
